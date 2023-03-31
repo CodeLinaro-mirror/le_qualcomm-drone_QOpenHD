@@ -1,0 +1,49 @@
+name: build_package_x86_23
+
+on:
+  push:
+    branches: [ "2.3-evo-lunar" ]
+  pull_request:
+      branches: [ "2.3-evo-lunar" ]
+
+env:
+  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
+  BUILD_TYPE: Release
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    container:
+      image: docker://ubuntu:lunar
+    steps:
+    - name: Checkout repository and submodules
+      uses: actions/checkout@v3
+      with:
+        submodules: recursive
+
+    - name: Install Dependencies
+      run: |
+        ls -a
+        sudo apt update
+        apt install -y git sudo
+        sudo ./install_build_dep.sh ubuntu-x86 stock    
+
+    - name: Build with make
+      run: |
+        sudo ./package.sh x86_64 ubuntu jammy
+    
+    - name: Push
+      id: push
+      uses: cloudsmith-io/action@master
+      with:
+        api-key: ${{ secrets.CLOUDSMITH_API_KEY }}
+        command: "push"
+        format: "deb"
+        owner: "openhd"
+        repo: "openhd-2-3-evo"
+        distro: "ubuntu"
+        release: "jammy"
+        republish: "true" # needed ONLY if version is not changing
+        file: "*.deb"
+       
+

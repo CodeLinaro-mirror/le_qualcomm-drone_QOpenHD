@@ -35,6 +35,7 @@ jobs:
 
     - name: Build with make
       run: |
+        sudo git config --global --add safe.directory /__w/QOpenHD/QOpenHD
         sudo ./package.sh x86_64 ubuntu lunar
     
     - name: Push

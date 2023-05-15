@@ -2,13 +2,13 @@ name: iOS starter workflow
 
 on:
   push:
-    branches: [ "2.3-evo" ]
+    branches: [ "2.3-evo", "OSX" ]
   pull_request:
-      branches: [ "2.3-evo" ]
+      branches: [ "2.3-evo", "OSX" ]
 
 jobs:
   build:
-    name: Build and Test default scheme using any available iPhone simulator
+    name: MAC OSX builds
     runs-on: macos-latest
 
     steps:
@@ -24,7 +24,6 @@ jobs:
           host:         mac
           target:       desktop
           modules:      qtcharts
-          dir:          ${{ runner.temp }}
           setup-python: false
 
       - name: Install Dependencies

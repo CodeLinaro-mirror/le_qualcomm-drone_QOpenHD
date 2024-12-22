@@ -10,6 +10,10 @@
 #include <arpa/inet.h>
 #endif
 
+#if !defined(__windows__) && !defined(SOCKET_ERROR)
+#define SOCKET_ERROR -1
+#endif
+
 #include <utility>
 #include <vector>
 #include <sstream>

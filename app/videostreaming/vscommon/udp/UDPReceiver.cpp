@@ -123,6 +123,7 @@ void UDPReceiver::receiveFromUDPLoop() {
 // for Qt6
 //    inet_pton(AF_INET, m_config.udp_ip_address.value().c_str(), (in_addr *) &myaddr.sin_addr.s_addr);
 #elif
+        std::cout<<"\n";
         inet_aton(m_config.udp_ip_address.value().c_str(), (in_addr *) &myaddr.sin_addr.s_addr);
 #endif
     }else{

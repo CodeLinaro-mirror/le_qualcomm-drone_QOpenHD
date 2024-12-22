@@ -116,17 +116,21 @@ void UDPReceiver::receiveFromUDPLoop() {
     memset((uint8_t *) &myaddr, 0, sizeof(myaddr));
     myaddr.sin_family = AF_INET;
     myaddr.sin_port = htons(m_config.udp_port);
-    if(m_config.udp_ip_address.has_value()){
-#ifdef __windows__
-        myaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-        //myaddr.sin_addr.s_addr = inet_addr(m_config.udp_ip_address.value().c_str());
-// for Qt6
-//    inet_pton(AF_INET, m_config.udp_ip_address.value().c_str(), (in_addr *) &myaddr.sin_addr.s_addr);
-#elif
-        std::cout<<"\n";
-        inet_aton(m_config.udp_ip_address.value().c_str(), (in_addr *) &myaddr.sin_addr.s_addr);
-#endif
-    }else{
+   if (m_config.udp_ip_address.has_value()) {
+    #ifdef __windows__
+        // For Windows, use htonl(INADDR_ANY) or inet_addr based on the configuration.
+        myaddr.sin_addr.s_addr = inet_addr(m_config.udp_ip_address.value().c_str());
+        // Uncomment the line below for Qt6 if needed
+        // inet_pton(AF_INET, m_config.udp_ip_address.value().c_str(), (in_addr *)&myaddr.sin_addr.s_addr);
+    #elif __linux__
+        // For Linux/Unix, use inet_aton or inet_pton as needed
+        inet_aton(m_config.udp_ip_address.value().c_str(), (in_addr *)&myaddr.sin_addr.s_addr);
+    #else
+        // Fallback for unknown platforms
+        #error "Unsupported platform"
+    #endif
+    } else {
+        // Default to INADDR_ANY if no IP address is specified
         myaddr.sin_addr.s_addr = htonl(INADDR_ANY);
     }
     if (bind(m_socket, (struct sockaddr *) &myaddr, sizeof(myaddr)) == SOCKET_ERROR) {

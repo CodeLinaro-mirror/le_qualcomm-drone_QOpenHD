@@ -42,13 +42,23 @@ HEADERS += \
 
 # dirty way to check if we are on rpi and therefore should use the external decode service
 CONFIG += link_pkgconfig
-packagesExist(mmal) {
-   DEFINES += IS_PLATFORM_RPI
+
+contains( DEFINES, IS_PLATFORM_RPI ) {
+    message( "Externally defined as RPI" )
+} else {
+    message( "Probing for RPI" )
+    packagesExist(mmal) {
+        message(This is a RPI)
+        DEFINES += IS_PLATFORM_RPI
+    }else {
+        message(This is not a RPI)
+    }
 }
+
+
 
 contains( DEFINES, IS_PLATFORM_ROCK ) {
     message( "Externally defined as rockchip" )
-    DEFINES += IS_PLATFORM_ROCK
 } else {
     message( "Probing for rockchip" )
     exists(/usr/local/share/openhd/platform/rock/) {

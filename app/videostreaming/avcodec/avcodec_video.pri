@@ -46,12 +46,20 @@ packagesExist(mmal) {
    DEFINES += IS_PLATFORM_RPI
 }
 
-exists(/usr/local/share/openhd/platform/rock/) {
-    message(This is a Rock)
+contains( DEFINES, IS_PLATFORM_ROCK ) {
+    message( "Externally defined as rockchip" )
     DEFINES += IS_PLATFORM_ROCK
 } else {
-    message(This is not a Rock)
+    message( "Probing for rockchip" )
+    exists(/usr/local/share/openhd/platform/rock/) {
+        message(This is a rockchip)
+        DEFINES += IS_PLATFORM_ROCK
+    } else {
+        message(This is not a rockchip)
+    }
 }
+
+
 
 # can be used in c++, also set to be exposed in qml
 DEFINES += QOPENHD_ENABLE_VIDEO_VIA_AVCODEC

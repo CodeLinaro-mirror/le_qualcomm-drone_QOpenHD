@@ -4,7 +4,6 @@
 
 #include "gl_videorenderer.h"
 #include "../color_helper.h"
-#include <GL/gl.h>
 #include <EGL/eglext.h>
 #include <GLES2/gl2ext.h>
 #include <chrono>
@@ -105,7 +104,7 @@ void GL_VideoRenderer::update_texture_yuv420P_yuv422P(AVFrame* frame) {
   };
   // Better be safe than sorry with how annying QT can be
   int gl_unpack_row_length_before=0;
-  glGetIntegerv(GL_UNPACK_ROW_LENGTH,&gl_unpack_row_length_before);
+  glGetIntegerv(GL_UNPACK_ROW_LENGTH_EXT,&gl_unpack_row_length_before);
   int gl_unpack_alignment_before=0;
   glGetIntegerv(GL_UNPACK_ALIGNMENT,&gl_unpack_alignment_before);
   for(int i=0;i<3;i++){
@@ -118,10 +117,10 @@ void GL_VideoRenderer::update_texture_yuv420P_yuv422P(AVFrame* frame) {
 	glBindTexture(test_texture_target, yuv_420_p_sw_frame_texture.textures[i]);
 	glTexParameteri(test_texture_target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(test_texture_target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glPixelStorei(GL_UNPACK_ROW_LENGTH,frame->linesize[i]);
+    glPixelStorei(GL_UNPACK_ROW_LENGTH_EXT,frame->linesize[i]);
 	glTexImage2D(test_texture_target, 0, GL_LUMINANCE, widths[i], heights[i], 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, frame->data[i]);
   }
-  glPixelStorei(GL_UNPACK_ROW_LENGTH,gl_unpack_row_length_before);
+  glPixelStorei(GL_UNPACK_ROW_LENGTH_EXT,gl_unpack_row_length_before);
   glPixelStorei(GL_UNPACK_ALIGNMENT, gl_unpack_alignment_before);
   glBindTexture(GL_TEXTURE_2D,0);
   GL_shaders::checkGlError("upload YUV420P");

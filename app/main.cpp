@@ -451,10 +451,10 @@ int main(int argc, char *argv[]) {
 #endif
 #ifdef QOPENHD_ENABLE_VIDEO_VIA_ANDROID
     engine.rootContext()->setContextProperty("QOPENHD_ENABLE_VIDEO_VIA_ANDROID", QVariant(true));
-
-    // Register QML types
     qmlRegisterType<QSurfaceTexture>("OpenHD", 1, 0, "SurfaceTexture");
-    qmlRegisterType<QAndroidMediaPlayer>("OpenHD", 1, 0, "AndroidMediaPlayer");
+    // Create a player
+    QAndroidMediaPlayer player;
+    engine.rootContext()->setContextProperty("_mediaPlayer", &player);
 #else
      engine.rootContext()->setContextProperty("QOPENHD_ENABLE_VIDEO_VIA_ANDROID", QVariant(false));
 #endif

@@ -1,0 +1,60 @@
+name: Windows Release
+
+on: [push]
+
+defaults:
+  run:
+    shell: cmd
+
+env:
+  SOURCE_DIR:   ${{ github.workspace }}
+  ARTIFACT:     QOpenHD-Evo.zip
+
+jobs:
+  build:
+    runs-on:  windows-2019
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Install Qt
+        id: qt-install
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '5.15.2'
+          aqtversion: '==3.1.*'
+          host: windows
+          target: desktop
+          arch: win32_mingw81
+          setup-python: false
+          tools: tools_mingw81,qt.tools.win32_mingw810 tools_ifw tools_qtcreator,qt.tools.qtcreator
+
+      
+      - name: Download JOM
+        uses: suisei-cn/actions-download-file@v1
+        with:
+          url:    http://download.qt.io/official_releases/jom/jom.zip
+
+      - name: Unzip JOM
+        run:  |
+              7z x jom.zip -ojom
+              - name: Download JOM
+              uses: suisei-cn/actions-download-file@v1.6.0
+              with:
+                url:    http://download.qt.io/official_releases/jom/jom.zip
+      
+      - name: Unzip JOM
+        run:  |
+              7z x jom.zip -ojom
+
+      - name: Debug
+        run:  |
+              dir
+
+      - name: Build
+        run:  |
+              qmake -r QOpenHD.pro
+              jom

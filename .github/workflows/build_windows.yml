@@ -32,29 +32,7 @@ jobs:
           setup-python: false
           tools: tools_mingw81,qt.tools.win32_mingw810 tools_ifw tools_qtcreator,qt.tools.qtcreator
 
-      
-      - name: Download JOM
-        uses: suisei-cn/actions-download-file@v1
-        with:
-          url:    http://download.qt.io/official_releases/jom/jom.zip
-
-      - name: Unzip JOM
-        run:  |
-              7z x jom.zip -ojom
-              - name: Download JOM
-              uses: suisei-cn/actions-download-file@v1.6.0
-              with:
-                url:    http://download.qt.io/official_releases/jom/jom.zip
-      
-      - name: Unzip JOM
-        run:  |
-              7z x jom.zip -ojom
-
-      - name: Debug
-        run:  |
-              dir
-
       - name: Build
         run:  |
               qmake -r QOpenHD.pro
-              jom
+              make

@@ -1,0 +1,105 @@
+name: Windows Release
+
+on: [push]
+
+defaults:
+  run:
+    shell: cmd
+
+env:
+  SOURCE_DIR:   ${{ github.workspace }}
+  ARTIFACT:     QOpenHD-Evo.zip
+
+jobs:
+  build:
+    runs-on:  windows-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Install Qt
+        id: qt-install
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '5.15.2'
+          aqtversion: '==3.1.*'
+          host: windows
+          target: desktop
+          arch: win32_mingw81
+          modules: qtcharts
+          tools: tools_cmake tools_mingw81,qt.tools.win32_mingw810
+          setup-python: true
+
+      - name: Install NSIS
+        run: choco install nsis --x86 --force -y
+
+      - name: Download FFmpeg package
+        shell: pwsh
+        run: |
+          $url = "https://github.com/OpenHD/QOpenHD/releases/download/v2.6.0/ffmpeg.7z"
+          $out = "${{ github.workspace }}\ffmpeg.7z"
+          Invoke-WebRequest -Uri $url -OutFile $out
+
+      - name: Download Angle package
+        shell: pwsh
+        run: |
+            $url = "https://github.com/OpenHD/QOpenHD/releases/download/v2.6.0/angle.zip"
+            $out = "${{ github.workspace }}\angle.zip"
+            Invoke-WebRequest -Uri $url -OutFile $out
+
+      - name: Extract FFmpeg package
+        shell: pwsh
+        run: |
+          mv *.7z ..
+          mv *.zip ..
+          cd ..
+          dir
+          7z.exe x "ffmpeg.7z" -offmpeg -y
+          7z.exe x "angle.zip" -oangle-x64 -y
+          dir ffmpeg\
+          dir angle-x64\angle\
+          Resolve-Path ffmpeg
+
+      - name: Create 10GB swap file
+        shell: pwsh
+        run: |
+            $swapPath = "C:\swapfile.sys"
+            # Create a 10GB file filled with zeros
+            fsutil file createnew $swapPath 10737418240
+            # Set the file as system and pagefile
+            attrib +s +h $swapPath
+            # Add the swap file to system pagefile settings
+            $regPath = "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management"
+            Set-ItemProperty -Path $regPath -Name "PagingFiles" -Value "$swapPath 1024 10240"
+            # Restart paging file service or machine (machine restart recommended)
+            Write-Host "Swap file created. A restart might be required to apply changes."
+        
+
+      - name: Configure QMake
+        shell: cmd
+        run: |
+          dir D:\a\QOpenHD\build-libs-windows\ffmpeg\include
+          dir /S /B ..\build-libs-windows\ffmpeg\include\libavcodec\
+          mkdir build
+          cd build
+          qmake ../QOpenHD.pro
+
+      - name: Build
+        shell: pwsh
+        run: |
+          cd build
+          make
+              
+      - name: Upload to Github
+        uses: 'actions/upload-artifact@v4'
+        with:
+          name: "QOpenHD"
+          path: |
+            D:\a\QOpenHD\QOpenHD\build\release\
+
+
+              
+              

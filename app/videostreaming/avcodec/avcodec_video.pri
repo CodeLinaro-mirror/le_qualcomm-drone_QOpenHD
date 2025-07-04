@@ -6,15 +6,15 @@ LIBS += -LC:/ffmpeg/lib -lavcodec -lavutil -lavformat
 LIBS += -lGLESv2 -lEGL
 
 win32 {
-    INCLUDEPATH += $$PWD/../../../build-libs-windows/ffmpeg/include
-    LIBS += -L$$PWD/../../../build-libs-windows/ffmpeg/lib -lavcodec -lavutil -lavformat
+    INCLUDEPATH += D:\a\QOpenHD\ffmpeg\include
+    LIBS += -LD:\a\QOpenHD\ffmpeg\lib -lavcodec -lavutil -lavformat
 
-    INCLUDEPATH += $$PWD/../../../build-libs-windows/angle-x64/include
-    LIBS += -L$$PWD/../../../build-libs-windows/angle-x64/bin -lGLESv2 -lEGL
+    INCLUDEPATH += D:\a\QOpenHD\angle-x64\angle\include
+    LIBS += -LD:\a\QOpenHD\angle-x64\angle\bin -lGLESv2 -lEGL
 
     DEFINES += EGL_EGLEXT_PROTOTYPES
     DEFINES += GL_GLEXT_PROTOTYPES
-#    LIBS += -lOpengl32
+    LIBS += -lOpengl32
 }
 
 # just using the something something webrtc from stephen was the easiest solution.

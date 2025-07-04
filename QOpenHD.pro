@@ -15,6 +15,8 @@ TRANSLATIONS = translations/QOpenHD_en.ts \
                translations/QOpenHD_it.ts \
                translations/QOpenHD_ro.ts
 
+QMAKE_CXXFLAGS -= -flto
+QMAKE_LFLAGS -= -flto
 
 include(platforms.pri)
 

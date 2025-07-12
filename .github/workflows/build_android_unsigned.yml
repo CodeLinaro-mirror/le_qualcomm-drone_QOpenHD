@@ -81,11 +81,58 @@ jobs:
       - name: Create build directory
         run:  mkdir ${{ runner.temp }}/shadow_build_dir
 
-      - name: Install gstreamer
-        working-directory:  ${{ github.workspace }}
+      - name: Setup dependencies for GStreamer build
         run: |
-          cd lib/gstreamer_prebuilts/
-          ./fetch_extract_locally.sh
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            ninja-build \
+            git \
+            meson \
+            python3-pip \
+            libglib2.0-dev \
+            libgstreamer1.0-dev \
+            libgstreamer-plugins-base1.0-dev \
+            qtbase5-dev \
+            qtdeclarative5-dev \
+            qt5-qmake \
+            qt5-default \
+            qttools5-dev-tools
+
+      - name: Clone GStreamer and gst-plugins-good source
+        run: |
+          git clone https://gitlab.freedesktop.org/gstreamer/gstreamer.git --branch 1.20.4 --depth 1
+          git clone https://gitlab.freedesktop.org/gstreamer/gst-plugins-good.git --branch 1.20.4 --depth 1
+
+      - name: Build gst-plugins-good with qmlglsink for Android
+        env:
+          ANDROID_NDK_ROOT: ${{ steps.setup-ndk.outputs.ndk-path }}
+          ANDROID_SDK_ROOT: ${{ env.ANDROID_SDK_ROOT }}
+          PATH: ${{ env.PATH }}
+        run: |
+          cd gst-plugins-good
+
+          # Configure meson for Android cross-compiling (adjust paths as needed)
+          meson setup build_android \
+            --cross-file=$ANDROID_NDK_ROOT/build/cmake/android.toolchain.cmake \
+            -Dqt5=true \
+            -Dqmlglsink=true \
+            -Dglib=enabled \
+            -Dandroid=true \
+            -Dexamples=disabled \
+            -Dtests=disabled
+
+          ninja -C build_android
+
+          # Package just the qmlglsink plugin (adjust path if needed)
+          mkdir -p output/plugins/good
+          cp build_android/gst/qmlglsink/libgstqmlglsink.so output/plugins/good/
+
+      - name: Upload prebuilt qmlglsink plugin
+        uses: actions/upload-artifact@v3
+        with:
+          name: gst_qmlglsink_android
+          path: output/plugins/good/libgstqmlglsink.so
 
       - name: Build
         working-directory: ${{ runner.temp }}/shadow_build_dir

@@ -95,9 +95,8 @@ jobs:
             libgstreamer-plugins-base1.0-dev \
             qtbase5-dev \
             qtdeclarative5-dev \
-            qt5-qmake \
-            qt5-default \
             qttools5-dev-tools
+
 
       - name: Clone GStreamer and gst-plugins-good source
         run: |

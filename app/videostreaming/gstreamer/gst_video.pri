@@ -14,10 +14,9 @@ HEADERS += \
     $$PWD/gstrtpaudioplayer.h \
     $$PWD/gstrtpreceiver.h
 
-android{
+android {
     message("gst android")
     # More or less taken from QGroundControl.
-    # this is already the "least dirty" solution I could come up with :/
     #DOWNLOADED_GST_FOLDER= /home/hyperion/gstreamer-1.0-android-universal-1.20.5
     #DOWNLOADED_GST_FOLDER= /home/consti10/Downloads/gstreamer-1.0-android-universal-1.20.5
     #DOWNLOADED_GST_FOLDER= $$PWD/../../../lib/gstreamer_prebuilts/gstreamer-1.0-android-universal-1.20.5
@@ -36,8 +35,6 @@ android{
         GSTREAMER_ARCH_FOLDER = armv7
     }
 
-    #GSTREAMER_ARCH_FOLDER = arm64
-
     GSTREAMER_ROOT_ANDROID = $$DOWNLOADED_GST_FOLDER/$$GSTREAMER_ARCH_FOLDER
     message(gstreamer root android:)
     message($$GSTREAMER_ROOT_ANDROID)
@@ -50,6 +47,9 @@ android{
         CONFIG          += VideoEnabled
 
         LIBS += -L$$GST_ROOT/lib/gstreamer-1.0 \
+            -lgstqmlglsink-1.0 \
+            -lgstgl-1.0 \
+            -lgstopengl \
             -lgstvideo-1.0 \
             -lgstcoreelements \
             -lgstplayback \
@@ -65,12 +65,10 @@ android{
             -lgstmatroska \
             -lgstmpegtsdemux \
             -lgstandroidmedia \
-            -lgstopengl \
             -lgsttcp \
             -lgstapp \
             -lgstalaw \
             -lgstautodetect
-
 
         # Rest of GStreamer dependencies
         LIBS += -L$$GST_ROOT/lib \
@@ -90,10 +88,10 @@ android{
             $$GST_ROOT/lib/gstreamer-1.0/include \
             $$GST_ROOT/include/glib-2.0 \
             $$GST_ROOT/lib/glib-2.0/include
-    }else {
+    } else {
         message(Gstreamer prebuilt directory does not exist)
     }
-}else {
+} else {
     message(gst linux)
     CONFIG += link_pkgconfig
     PKGCONFIG   += gstreamer-1.0  gstreamer-video-1.0 gstreamer-gl-1.0 gstreamer-app-1.0 #gstreamer1.0-plugins-good

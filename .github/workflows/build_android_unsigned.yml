@@ -129,7 +129,7 @@ jobs:
           cp build_android/gst/qmlglsink/libgstqmlglsink.so output/plugins/good/
 
       - name: Upload prebuilt qmlglsink plugin
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: gst_qmlglsink_android
           path: output/plugins/good/libgstqmlglsink.so

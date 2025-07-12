@@ -99,20 +99,10 @@ jobs:
           python3 -m pip install --user meson
           export PATH=$HOME/.local/bin:$PATH
           meson -v
-
-      - name: Clone GStreamer and gst-plugins-good source
-        run: |
+          ls -a
           git clone https://gitlab.freedesktop.org/gstreamer/gstreamer.git
           git clone https://gitlab.freedesktop.org/gstreamer/gst-plugins-good.git
-
-      - name: Build gst-plugins-good with qmlglsink for Android
-        env:
-          ANDROID_NDK_ROOT: ${{ steps.setup-ndk.outputs.ndk-path }}
-          ANDROID_SDK_ROOT: ${{ env.ANDROID_SDK_ROOT }}
-          PATH: ${{ env.PATH }}
-        run: |
           cd gst-plugins-good
-
           # Configure meson for Android cross-compiling (adjust paths as needed)
           meson setup build_android \
             --cross-file=$ANDROID_NDK_ROOT/build/cmake/android.toolchain.cmake \

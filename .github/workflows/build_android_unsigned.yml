@@ -99,7 +99,6 @@ jobs:
           python3 -m pip install --user meson
           export PATH=$HOME/.local/bin:$PATH
           meson -v
-          ls -a
           git clone https://gitlab.freedesktop.org/gstreamer/gstreamer.git
           git clone https://gitlab.freedesktop.org/gstreamer/gst-plugins-good.git
           cd gst-plugins-good

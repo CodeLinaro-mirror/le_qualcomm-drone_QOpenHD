@@ -88,15 +88,16 @@ jobs:
             build-essential \
             ninja-build \
             git \
-            meson \
             python3-pip \
             libglib2.0-dev \
             libgstreamer1.0-dev \
             libgstreamer-plugins-base1.0-dev \
             qtbase5-dev \
             qtdeclarative5-dev \
-            qttools5-dev-tools \
-            meson
+            qttools5-dev-tools
+
+          python3 -m pip install --user meson
+          export PATH=$HOME/.local/bin:$PATH
 
       - name: Clone GStreamer and gst-plugins-good source
         run: |

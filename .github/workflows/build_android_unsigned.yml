@@ -97,11 +97,10 @@ jobs:
             qtdeclarative5-dev \
             qttools5-dev-tools
 
-
       - name: Clone GStreamer and gst-plugins-good source
         run: |
-          git clone https://gitlab.freedesktop.org/gstreamer/gstreamer.git --branch 1.20.4 --depth 1
-          git clone https://gitlab.freedesktop.org/gstreamer/gst-plugins-good.git --branch 1.20.4 --depth 1
+          git clone https://gitlab.freedesktop.org/gstreamer/gstreamer.git
+          git clone https://gitlab.freedesktop.org/gstreamer/gst-plugins-good.git
 
       - name: Build gst-plugins-good with qmlglsink for Android
         env:

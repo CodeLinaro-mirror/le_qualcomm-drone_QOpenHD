@@ -65,7 +65,7 @@ static bool init_qmlglsink(){
 static void init_qmlglsink_and_log(){
     const bool success=init_qmlglsink();
     if(success){
-        qDebug()<<"qmlglsink found - gstreamer + qmlglsink should work";
+        qDebug()<<"qmlglsink found - gstreamer & qmlglsink should work";
     }else{
         qWarning("qmlglsink not found - check your gstreamer installation");
         // We display this as an openhd log, just because it has happened so often now that people complain about secondary video not working,

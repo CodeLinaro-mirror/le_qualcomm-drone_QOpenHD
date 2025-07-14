@@ -1,16 +1,16 @@
 #include "udp_connection.h"
 #include "tutil/qopenhdmavlinkhelper.hpp"
 
-#ifdef __windows__
-#define _WIN32_WINNT 0x0600 //TODO dirty
+#if defined(_WIN32) || defined(_WIN64)
 #include <winsock2.h>
-#include <Ws2tcpip.h> // For InetPton
+#include <ws2tcpip.h>
 #else
 #include <arpa/inet.h>
-#include <netinet/in.h>
-#include <sys/socket.h>
-#include <unistd.h>
+    #include <netinet/in.h>
+    #include <sys/socket.h>
+    #include <unistd.h>
 #endif
+
 
 #include <qdebug.h>
 #include "mavlinkchannel.h"
@@ -49,7 +49,7 @@ void UDPConnection::stop_looping()
     assert(m_receive_thread!=nullptr);
     qDebug()<<"UDP stop - begin";
     m_keep_receiving=false;
-#ifdef __windows__
+#if defined(_WIN32) || defined(_WIN64)
     shutdown(m_socket_fd, SD_BOTH);
 
     closesocket(m_socket_fd);
@@ -139,7 +139,7 @@ void UDPConnection::loop_receive()
 
 bool UDPConnection::setup_socket()
 {
-#ifdef __windows__
+#if defined(_WIN32) || defined(_WIN64)
     WSADATA wsa;
     if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0) {
         qDebug() << "Error: Winsock failed, error: %d", WSAGetLastError();

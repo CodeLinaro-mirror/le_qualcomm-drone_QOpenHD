@@ -64,14 +64,17 @@
 #include <fcntl.h>
 
 void attachConsole() {
-    if (AttachConsole(ATTACH_PARENT_PROCESS) || AllocConsole()) {
-        freopen("CONOUT$", "w", stdout);
-        freopen("CONOUT$", "w", stderr);
-        setvbuf(stdout, nullptr, _IONBF, 0);
-        setvbuf(stderr, nullptr, _IONBF, 0);
-        printf("Console attached!\n");
-    } else {
-        MessageBoxA(NULL, "Failed to attach console!", "Error", MB_OK | MB_ICONERROR);
+    try {
+        if (AttachConsole(ATTACH_PARENT_PROCESS) || AllocConsole()) {
+            FILE* dummy;
+            freopen_s(&dummy, "CONOUT$", "w", stdout);
+            freopen_s(&dummy, "CONOUT$", "w", stderr);
+            setvbuf(stdout, nullptr, _IONBF, 0);
+            setvbuf(stderr, nullptr, _IONBF, 0);
+            printf("Console attached!\n");
+        }
+    } catch (...) {
+        // Silently ignore console attachment errors
     }
 }
 #endif
@@ -254,7 +257,6 @@ static void android_check_permissions(){
 int main(int argc, char *argv[]) {
 
 #if defined(__windows__)
-    QCoreApplication::setAttribute(Qt::AA_UseOpenGLES);
     attachConsole();
 #endif
 

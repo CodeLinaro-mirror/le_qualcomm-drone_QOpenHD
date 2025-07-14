@@ -17,6 +17,15 @@
 #include <optional>
 #include <assert.h>
 #include <memory>
+#include <cstdint>
+#include <cstddef>
+
+// Кроссплатформенная совместимость
+#if defined(_WIN32) || defined(_WIN64)
+    // MSVC специфичные определения
+    #pragma warning(push)
+    #pragma warning(disable: 4996) // отключение предупреждений о небезопасных функциях
+#endif
 
 #include "NALUnitType.hpp"
 
@@ -88,8 +97,8 @@ public:
         return &getData()[m_nalu_prefix_size];
     }
     //size of the NALU data without 0001 prefix
-    ssize_t getDataSizeWithoutPrefix()const{
-        return getSize()-m_nalu_prefix_size;
+    size_t getDataSizeWithoutPrefix()const{
+        return static_cast<size_t>(getSize()-m_nalu_prefix_size);
     }
     // return the nal unit type (quick)
    int get_nal_unit_type()const{
@@ -224,7 +233,9 @@ public:
         m_nalu=std::make_unique<NALU>(m_data->data(),m_data->size(),nalu.IS_H265_PACKET,nalu.creationTime);
     }
     NALUBuffer(const NALUBuffer&)=delete;
-    NALUBuffer(const NALUBuffer&&)=delete;
+    NALUBuffer& operator=(const NALUBuffer&)=delete;
+    NALUBuffer(NALUBuffer&&)=delete;
+    NALUBuffer& operator=(NALUBuffer&&)=delete;
 
     const NALU& get_nal(){
         return *m_nalu;
@@ -233,6 +244,10 @@ private:
     std::shared_ptr<std::vector<uint8_t>> m_data;
     std::unique_ptr<NALU> m_nalu;
 };
+
+#if defined(_WIN32) || defined(_WIN64)
+    #pragma warning(pop)
+#endif
 
 #endif //LIVE_VIDEO_10MS_ANDROID_NALU_H
 

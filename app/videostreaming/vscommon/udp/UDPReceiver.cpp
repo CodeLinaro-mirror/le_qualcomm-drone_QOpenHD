@@ -2,11 +2,14 @@
 #include "common/StringHelper.hpp"
 #include "common/SchedulingHelper.hpp"
 
-#if defined(_WIN32)
+#if defined(__windows__)
 #include <winsock2.h>
+#include <ws2tcpip.h>
 #define SHUT_RD SD_RECEIVE
 #else
 #include <arpa/inet.h>
+#include <unistd.h>
+#include <errno.h>
 #endif
 
 #include <utility>
@@ -15,9 +18,12 @@
 #include <array>
 #include <cstring>
 
+#if !defined(__windows__)
 #include <sys/time.h>
+#endif
 
 #include <iostream>
+#include <chrono>
 
 #include <qdebug.h>
 
@@ -60,7 +66,11 @@ void UDPReceiver::stopReceiving() {
 
 static void increase_socket_recv_buff_size(int sockfd, const int wanted_rcvbuff_size_bytes) {
     int recvBufferSize = 0;
+#if defined(_WIN32) || defined(_WIN64)
+    int len = sizeof(recvBufferSize);
+#else
     socklen_t len = sizeof(recvBufferSize);
+#endif
     getsockopt(sockfd, SOL_SOCKET, SO_RCVBUF, (char *)&recvBufferSize, &len);
     {
         std::stringstream ss;
@@ -83,10 +93,17 @@ static void increase_socket_recv_buff_size(int sockfd, const int wanted_rcvbuff_
 
 void UDPReceiver::receiveFromUDPLoop() {
     m_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+#if defined(_WIN32) || defined(_WIN64)
+    if (m_socket == INVALID_SOCKET) {
+        std::cerr << "Error creating socket\n";
+        return;
+    }
+#else
     if (m_socket == -1) {
         std::cerr << "Error creating socket\n";
         return;
     }
+#endif
     int enable = 1;
     if (setsockopt(m_socket, SOL_SOCKET, SO_REUSEADDR, (char *)&enable, sizeof(int)) < 0) {
         std::cout << "Error setting reuse\n";
@@ -107,8 +124,8 @@ void UDPReceiver::receiveFromUDPLoop() {
     myaddr.sin_family = AF_INET;
     myaddr.sin_port = htons(m_config.udp_port);
     if (m_config.udp_ip_address.has_value()) {
-#ifdef _WIN32
-        myaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+#if defined(_WIN32) || defined(_WIN64)
+        inet_pton(AF_INET, m_config.udp_ip_address.value().c_str(), &myaddr.sin_addr);
 #else
         inet_aton(m_config.udp_ip_address.value().c_str(), (in_addr *)&myaddr.sin_addr.s_addr);
 #endif
@@ -130,11 +147,16 @@ void UDPReceiver::receiveFromUDPLoop() {
 
     const auto buff = std::make_unique<std::array<uint8_t, UDP_PACKET_MAX_SIZE>>();
     sockaddr_in source;
+#if defined(_WIN32) || defined(_WIN64)
+    int sourceLen = sizeof(sockaddr_in);
+#else
     socklen_t sourceLen = sizeof(sockaddr_in);
+#endif
 
     while (m_receiving) {
-#ifdef _WIN32
-        auto tmp = recvfrom(m_socket, (char *)buff->data(), UDP_PACKET_MAX_SIZE, 0, (sockaddr *)&source, &sourceLen);
+#if defined(_WIN32) || defined(_WIN64)
+        int tmp = recvfrom(m_socket, (char *)buff->data(), UDP_PACKET_MAX_SIZE, 0, (sockaddr *)&source, &sourceLen);
+        const int message_length = tmp;
 #else
         ssize_t tmp;
         if (m_config.enable_nonblocking) {
@@ -142,8 +164,8 @@ void UDPReceiver::receiveFromUDPLoop() {
         } else {
             tmp = recvfrom(m_socket, buff->data(), UDP_PACKET_MAX_SIZE, MSG_WAITALL, (sockaddr *)&source, &sourceLen);
         }
-#endif
         const ssize_t message_length = tmp;
+#endif
         if (message_length > 0) {
             m_last_received_packet_ts = std::chrono::steady_clock::now();
             m_on_data_received_cb(buff->data(), (size_t)message_length);
@@ -154,12 +176,23 @@ void UDPReceiver::receiveFromUDPLoop() {
                 m_sender_ip = s1;
             }
         } else {
+#if defined(_WIN32) || defined(_WIN64)
+            int error = WSAGetLastError();
+            if (error != WSAEWOULDBLOCK) {
+                // Handle error
+            }
+#else
             if (errno != EWOULDBLOCK) {
                 // Handle error
             }
+#endif
         }
     }
+#if defined(_WIN32) || defined(_WIN64)
+    closesocket(m_socket);
+#else
     close(m_socket);
+#endif
 }
 
 int UDPReceiver::getPort() const {

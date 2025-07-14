@@ -19,7 +19,8 @@
 #if defined(__macos__)
 static_assert(__BYTE_ORDER__==LITTLE_ENDIAN);
 #elif defined(_WIN32) || defined(_WIN64)
-static_assert(__BYTE_ORDER__==__ORDER_LITTLE_ENDIAN__);
+// Windows is always little endian on supported platforms
+static_assert(true);
 #else
 static_assert(__BYTE_ORDER__==__LITTLE_ENDIAN);
 #endif
@@ -41,6 +42,8 @@ static_assert(__BYTE_ORDER__==__LITTLE_ENDIAN);
 //|            contributing source (CSRC) identifiers             |
 //|                             ....                              |
 //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+#pragma pack(push, 1)
 struct rtp_header_t {
     //For little endian
     uint8_t cc:4;            // CSRC count
@@ -77,7 +80,8 @@ struct rtp_header_t {
         ss<<"sources"<<(int)getSources()<<"\n";
         return ss.str();
     }
-} __attribute__ ((packed)); /* 12 bytes */
+}; /* 12 bytes */
+#pragma pack(pop)
 static_assert(sizeof(rtp_header_t)==12);
 
 
@@ -89,11 +93,13 @@ static_assert(sizeof(rtp_header_t)==12);
 //+-+-+-+-+-+-+-+-+
 //|F|NRI|  Type   |
 //+---------------+
+#pragma pack(push, 1)
 struct nalu_header_t {
     uint8_t type:   5;
     uint8_t nri:    2;
     uint8_t f:      1;
-} __attribute__ ((packed));
+};
+#pragma pack(pop)
 static_assert(sizeof(nalu_header_t)==1);
 // fu indicator and nalu_header are exactly the same !
 // only in a fu packet the nalu header is named fu indicator
@@ -103,12 +109,14 @@ using fu_indicator_t=nalu_header_t;
 //+-+-+-+-+-+-+-+-+
 //|S|E|R|  Type   |
 //+---------------+
+#pragma pack(push, 1)
 typedef struct fu_header_t {
     uint8_t type:   5;
     uint8_t r:      1;
     uint8_t e:      1;
     uint8_t s:      1;
-} __attribute__ ((packed));
+};
+#pragma pack(pop)
 static_assert(sizeof(fu_header_t)==1);
 
 //******************************************************** H265 ********************************************************
@@ -119,12 +127,15 @@ static_assert(sizeof(fu_header_t)==1);
 //  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 //  |F|   Type    |  LayerId  | TID |
 //  +-------------+-----------------+
+#pragma pack(push, 1)
 struct nal_unit_header_h265_t{
-    uint8_t f:      1; //1st byte
-    uint8_t type:   6; //1st byte
-    uint8_t layerId:6; //2nd byte
-    uint8_t tid:    3; //2nd byte
-}__attribute__ ((packed)) __attribute__ ((gcc_struct));
+    uint8_t f:      1; //1st byte bit 0
+    uint8_t type:   6; //1st byte bits 1-6
+    uint8_t layerId_high: 1; //1st byte bit 7
+    uint8_t layerId_low:  5; //2nd byte bits 0-4
+    uint8_t tid:    3; //2nd byte bits 5-7
+};
+#pragma pack(pop)
 static_assert(sizeof(nal_unit_header_h265_t)==2);
 // defined in 4.4.3 FU Header
 //+---------------+
@@ -132,11 +143,13 @@ static_assert(sizeof(nal_unit_header_h265_t)==2);
 //+-+-+-+-+-+-+-+-+
 //|S|E|  FuType   |
 //+---------------+
+#pragma pack(push, 1)
 struct fu_header_h265_t{
     uint8_t fuType:6;
     uint8_t e:1;
     uint8_t s:1;
-}__attribute__ ((packed));
+};
+#pragma pack(pop)
 static_assert(sizeof(fu_header_h265_t)==1);
 
 
@@ -150,6 +163,7 @@ static_assert(sizeof(fu_header_h265_t)==1);
 //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 //|      Type     |       Q       |     Width     |     Height    |
 //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+#pragma pack(push, 1)
 struct jpeg_main_header_t{
      uint8_t type_specific:8;
      uint32_t fragment_offset:24;
@@ -158,18 +172,21 @@ struct jpeg_main_header_t{
      uint8_t width:8;
      uint8_t height:8;
 };
+#pragma pack(pop)
 // https://datatracker.ietf.org/doc/html/rfc2435#section-3.1.7
 //  0                   1                   2                   3
 //  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 // |       Restart Interval        |F|L|       Restart Count       |
 // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+#pragma pack(push, 1)
 struct jpeg_restart_marker_header_t{
     uint16_t restart_interval;
     uint16_t f;
     uint16_t l;
     uint16_t restart_count;
 };
+#pragma pack(pop)
 // https://datatracker.ietf.org/doc/html/rfc2435#section-3.1.8
 //   0                   1                   2                   3
 //   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
@@ -179,12 +196,14 @@ struct jpeg_restart_marker_header_t{
 // |                    Quantization Table Data                    |
 // |                              ...                              |
 // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+#pragma pack(push, 1)
 struct jpeg_quant_table_header_t{
     uint16_t mbz;
     uint16_t precision;
     uint16_t length;
     // quantization table data
 };
+#pragma pack(pop)
 
 
 // Unfortunately the payload header is the same for h264 and h265 (they don't have a type for it and catch

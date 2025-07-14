@@ -18,6 +18,14 @@
 #include "checks.h"
 #include "type_traits.h"
 
+// Защита от конфликта с макросом min в Windows
+#ifdef min
+#undef min
+#endif
+#ifdef max
+#undef max
+#endif
+
 namespace rtc {
 
 // tl;dr: rtc::ArrayView is the same thing as gsl::span from the Guideline
@@ -254,7 +262,7 @@ class ArrayView final : public impl::ArrayViewBase<T, Size> {
   ArrayView<T> subview(size_t offset, size_t size) const {
     return offset < this->size()
                ? ArrayView<T>(this->data() + offset,
-                              std::min(size, this->size() - offset))
+                              (std::min)(size, this->size() - offset))
                : ArrayView<T>();
   }
   ArrayView<T> subview(size_t offset) const {

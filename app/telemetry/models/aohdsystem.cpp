@@ -41,24 +41,18 @@ static int get_required_dbm_for_rate(int channel_width,int mcs_index){
 }
 // Bit field for boolean only value(s)
 struct MonitorModeLinkBitfield {
-    unsigned int stbc:1;
-    unsigned int lpdc:1;
-    unsigned int short_guard:1;
-    unsigned int curr_rx_last_packet_status_good:1;
-    unsigned int unused:4;
-}
-#ifdef __windows__
-;
-#else
-__attribute__ ((packed));
-static_assert(sizeof(MonitorModeLinkBitfield)==1);
-#endif
+    bool stbc;
+    bool lpdc;
+    bool short_guard;
+    bool curr_rx_last_packet_status_good;
+};
+
 static MonitorModeLinkBitfield parse_monitor_link_bitfield(uint8_t bitfield){
     MonitorModeLinkBitfield ret{};
-#ifdef __windows__
-#else
-    std::memcpy((uint8_t*)&ret,&bitfield,1);
-#endif
+    ret.stbc = (bitfield >> 0) & 1;
+    ret.lpdc = (bitfield >> 1) & 1;
+    ret.short_guard = (bitfield >> 2) & 1;
+    ret.curr_rx_last_packet_status_good = (bitfield >> 3) & 1;
     return ret;
 }
 

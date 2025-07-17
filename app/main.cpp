@@ -256,7 +256,7 @@ static void android_check_permissions(){
 
 int main(int argc, char *argv[]) {
 
-#if defined(__windows__)
+#if defined(__windows__) && defined(NDEBUG)
     attachConsole();
 #endif
 
@@ -272,7 +272,7 @@ int main(int argc, char *argv[]) {
         }
         // a is deleted again
     }
-    
+
     QSettings settings;
     qDebug()<<"Storing settings at ["<<settings.fileName()<<"]";
     // RPI and ROCK - disable font dpi. The user has to scale manually when using displays
@@ -420,6 +420,7 @@ int main(int argc, char *argv[]) {
 
     // And then the main part
     engine.rootContext()->setContextProperty("_mavlinkTelemetry", &MavlinkTelemetry::instance());
+
 
 // Platform - dependend video begin -----------------------------------------------------------------
 #ifdef QOPENHD_ENABLE_GSTREAMER_QMLGLSINK

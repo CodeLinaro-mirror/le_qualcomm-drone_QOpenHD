@@ -53,6 +53,9 @@
 #include "videostreaming/vscommon/audio_playback.h"
 // Video end
 
+// WindowsVideo plugin
+#include "../plugins/windowsVideo/windowsvideoitem.h"
+
 #include "util/qrenderstats.h"
 
 #if defined(__ios__)
@@ -378,6 +381,8 @@ int main(int argc, char *argv[]) {
     qmlRegisterType<FlightPathVector>("OpenHD", 1, 0, "FlightPathVector");
     qmlRegisterType<AoaGauge>("OpenHD", 1, 0, "AoaGauge");
 
+    // Register WindowsVideo plugin types
+    qmlRegisterType<WindowsVideoItem>("OpenHD", 1, 0, "WindowsVideoItem");
 
     qmlRegisterUncreatableType<QmlObjectListModel>("OpenHD", 1, 0, "QmlObjectListModel", "Reference only");
 

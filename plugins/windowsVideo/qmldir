@@ -1,0 +1,3 @@
+module OpenHD.WindowsVideo
+plugin WindowsVideoPlugin
+classname WindowsVideoPlugin

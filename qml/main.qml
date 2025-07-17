@@ -139,6 +139,38 @@ ApplicationWindow {
             id: restartQOpenHDMessageBox
         }
 
+        // WindowsVideo test popup
+        WindowsVideoPopup {
+            id: windowsVideoPopup
+        }
+
+        // Test button for WindowsVideo plugin (development only)
+        Rectangle {
+            id: testButton
+            width: 100
+            height: 40
+            color: "#3498db"
+            border.color: "#2980b9"
+            border.width: 2
+            radius: 5
+            anchors.top: parent.top
+            anchors.right: parent.right
+            anchors.margins: 20
+            z: 10
+            
+            Text {
+                anchors.centerIn: parent
+                text: "Video Test"
+                color: "white"
+                font.bold: true
+            }
+            
+            MouseArea {
+                anchors.fill: parent
+                onClicked: windowsVideoPopup.open()
+            }
+        }
+
         // Allows closing QOpenHD via a keyboard shortcut
         // also stops the service, such that it is not restartet
         Shortcut {

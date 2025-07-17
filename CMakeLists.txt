@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.30)
+cmake_minimum_required(VERSION 3.16)
 include(cmake/qt.cmake)
 
 project(QOpenHDApp VERSION 0.1 LANGUAGES C CXX)
@@ -175,6 +175,7 @@ target_link_libraries(${PROJECT_NAME}
     Qt6::QuickLayouts
     Qt6::QuickControls2Impl
     Qt6::QuickTemplates2
+    WindowsVideoPlugin
 #    Qt6::Labs
 #    Qt6::LabsSettings
 )
@@ -187,6 +188,9 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 if(ANDROID)
     set_property(TARGET ${PROJECT_NAME} APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/androidqt6)
 endif()
+
+# Include plugins
+add_subdirectory(plugins/windowsVideo)
 
 include(lib/h264/h264.cmake)
 #include(app/videostreaming/avcodec/avcodec_video.cmake)

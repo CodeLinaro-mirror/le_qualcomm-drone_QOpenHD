@@ -5,6 +5,7 @@
 #include <QQmlComponent>
 #include <QDebug>
 #include <QFontDatabase>
+#include <QDirIterator>
 #if defined(__android__)
 #include <QtAndroid>
 #endif
@@ -94,6 +95,15 @@ RESOLVEFUNC(EVP_PKEY_get_base_id);
 //#include <qpa/qplatformnativeinterface.h>
 //#include <xf86drm.h>
 //#include <xf86drmMode.h>
+
+// A helper function to list all resources available to the application
+static void list_all_resources(){
+    qDebug() << "Listing all resources:";
+    QDirIterator it(":/", QDirIterator::Subdirectories);
+    while (it.hasNext()) {
+        qDebug() << it.next();
+    }
+}
 
 // Load all the fonts we use ?!
 static void load_fonts(){
@@ -356,6 +366,10 @@ int main(int argc, char *argv[]) {
     QOpenHD::instance().keep_screen_on(true);
     android_check_permissions();
     load_fonts();
+
+#if !defined(NDEBUG)
+    list_all_resources();
+#endif
 
     qmlRegisterType<SpeedLadder>("OpenHD", 1, 0, "SpeedLadder");
     qmlRegisterType<AltitudeLadder>("OpenHD", 1, 0, "AltitudeLadder");

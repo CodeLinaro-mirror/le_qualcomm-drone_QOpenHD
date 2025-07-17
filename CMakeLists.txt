@@ -1,35 +1,16 @@
 cmake_minimum_required(VERSION 3.30)
+include(cmake/qt.cmake)
 
 project(QOpenHDApp VERSION 0.1 LANGUAGES C CXX)
 
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Platform-specific macro definitions
-if(WIN32)
-    add_compile_definitions(__windows__)
-endif()
+include(cmake/platforms.cmake)
 
-if(ANDROID)
-    add_compile_definitions(__android__)
-endif()
+find_package(QT NAMES Qt6 REQUIRED COMPONENTS Core)
 
-if(APPLE)
-    if(IOS)
-        add_compile_definitions(__ios__)
-    else()
-        add_compile_definitions(__macos__)
-    endif()
-endif()
-
-if(UNIX AND NOT ANDROID AND NOT APPLE)
-    add_compile_definitions(__desktoplinux__)
-endif()
-
-find_package(Qt6 REQUIRED COMPONENTS
-        Core
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS
         Gui
         Quick
         Widgets
@@ -37,9 +18,9 @@ find_package(Qt6 REQUIRED COMPONENTS
         QuickControls2)
 
 # Try to find optional components
-find_package(Qt6 QUIET COMPONENTS 
-    QuickLayouts 
-    QuickControls2Impl 
+find_package(Qt6 QUIET COMPONENTS
+    QuickLayouts
+    QuickControls2Impl
     QuickTemplates2
     QuickControls2Material
     QuickControls2Basic
@@ -60,7 +41,8 @@ if(Qt6QuickControls2Material_FOUND)
 else()
     message(WARNING "Qt6QuickControls2Material not found")
 endif()
-qt_standard_project_setup(REQUIRES 6.5)
+
+qt_standard_project_setup()
 
 set(QOPENHD_SOURCE_FILES_LIST
     app/main.cpp
@@ -121,32 +103,50 @@ set(QOPENHD_SOURCE_FILES_LIST
     app/videostreaming/vscommon/rtp/rtpreceiver.cpp
     app/videostreaming/vscommon/udp/UDPReceiver.cpp
     app/videostreaming/vscommon/decodingstatistcs.cpp
-)
 
-qt_add_executable(QOpenHDApp
-    MANUAL_FINALIZATION
-    ${QOPENHD_SOURCE_FILES_LIST}
-    ##
     lib/geographiclib-c-2.0/src/geodesic.c
-    ##
-    qml/qml.qrc
-    ##
-    androidqt6/AndroidManifest.xml
 )
 
-target_include_directories(QOpenHDApp PUBLIC app)
-target_include_directories(QOpenHDApp PUBLIC app/common)
-target_include_directories(QOpenHDApp PUBLIC app/adsb)
-target_include_directories(QOpenHDApp PUBLIC app/logging)
-target_include_directories(QOpenHDApp PUBLIC app/osd)
-target_include_directories(QOpenHDApp PUBLIC app/util)
-target_include_directories(QOpenHDApp PUBLIC app/telemetry)
-target_include_directories(QOpenHDApp PUBLIC app/telemetry/util)
+if(QT_VERSION VERSION_LESS 5.15)
+    qt5_add_resources(QOPENHD_SOURCE_FILES_LIST qml/qml.qrc)
+else()
+    qt_add_resources(QOPENHD_SOURCE_FILES_LIST qml/qml.qrc)
+endif()
 
-target_include_directories(QOpenHDApp PUBLIC app/videostreaming/vscommon)
-target_include_directories(QOpenHDApp PUBLIC app/videostreaming/vscommon/rtp)
-target_include_directories(QOpenHDApp PUBLIC lib)
-target_include_directories(QOpenHDApp PUBLIC lib/geographiclib-c-2.0/src)
+qt_add_executable(${PROJECT_NAME} ${QOPENHD_SOURCE_FILES_LIST})
+
+#qt_add_executable(QOpenHDApp
+#    MANUAL_FINALIZATION
+#    ${QOPENHD_SOURCE_FILES_LIST}
+#    ##
+#    lib/geographiclib-c-2.0/src/geodesic.c
+#    ##
+#    qml/qml.qrc
+#    ##
+#    androidqt6/AndroidManifest.xml
+#)
+
+if(QT_VERSION VERSION_GREATER_EQUAL 6.2)
+    qt_add_qml_module(${PROJECT_NAME}
+        URI org.openhdfpv
+        VERSION 1.0
+        RESOURCE_PREFIX "/"
+    )
+endif()
+
+target_include_directories(${PROJECT_NAME} PUBLIC app)
+target_include_directories(${PROJECT_NAME} PUBLIC app/common)
+target_include_directories(${PROJECT_NAME} PUBLIC app/adsb)
+target_include_directories(${PROJECT_NAME} PUBLIC app/logging)
+target_include_directories(${PROJECT_NAME} PUBLIC app/osd)
+target_include_directories(${PROJECT_NAME} PUBLIC app/util)
+target_include_directories(${PROJECT_NAME} PUBLIC app/telemetry)
+target_include_directories(${PROJECT_NAME} PUBLIC app/telemetry/util)
+
+target_include_directories(${PROJECT_NAME} PUBLIC app/videostreaming/vscommon)
+target_include_directories(${PROJECT_NAME} PUBLIC app/videostreaming/vscommon/rtp)
+target_include_directories(${PROJECT_NAME} PUBLIC lib)
+target_include_directories(${PROJECT_NAME} PUBLIC lib/geographiclib-c-2.0/src)
 
 #qt_add_qml_module(QOpenHDApp
 #    URI hello
@@ -164,13 +164,13 @@ target_include_directories(QOpenHDApp PUBLIC lib/geographiclib-c-2.0/src)
 #    qml/qml.qrc)
 
 
-target_link_libraries(QOpenHDApp
-    PRIVATE 
-    Qt6::Core 
-    Qt6::Quick 
-    Qt6::Gui 
-    Qt6::Widgets 
-    Qt6::Qml 
+target_link_libraries(${PROJECT_NAME}
+    PRIVATE
+    Qt6::Core
+    Qt6::Quick
+    Qt6::Gui
+    Qt6::Widgets
+    Qt6::Qml
     Qt6::QuickControls2
     Qt6::QuickLayouts
     Qt6::QuickControls2Impl
@@ -179,13 +179,14 @@ target_link_libraries(QOpenHDApp
 #    Qt6::LabsSettings
 )
 
-set_target_properties(QOpenHDApp PROPERTIES
+set_target_properties(${PROJECT_NAME} PROPERTIES
         WIN32_EXECUTABLE ON
         MACOSX_BUNDLE ON
 )
 
-set_property(TARGET QOpenHDApp APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
-             ${CMAKE_CURRENT_SOURCE_DIR}/androidqt6)
+if(ANDROID)
+    set_property(TARGET ${PROJECT_NAME} APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/androidqt6)
+endif()
 
 include(lib/h264/h264.cmake)
 #include(app/videostreaming/avcodec/avcodec_video.cmake)
@@ -198,6 +199,10 @@ include(lib/h264/h264.cmake)
 #    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
 #    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 #)
+
+if(Qt6_FOUND)
+    qt_import_qml_plugins(${PROJECT_NAME})
+endif()
 
 if (WIN32 AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
     set(DEBUG_SUFFIX)
@@ -262,7 +267,7 @@ if (WIN32 AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
 
     # Creating qt.conf
     add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E echo "[Paths]\nPlugins = plugins\nQml2Imports = qml" 
+            COMMAND ${CMAKE_COMMAND} -E echo "[Paths]\nPlugins = plugins\nQml2Imports = qml"
             > "$<TARGET_FILE_DIR:${PROJECT_NAME}>/qt.conf")
 
     # Use windeployqt if available

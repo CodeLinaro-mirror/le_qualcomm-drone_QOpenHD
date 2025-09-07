@@ -87,6 +87,7 @@ void attachConsole() {
 
 #include <QByteArray>
 #include <QProcess>
+#include <QProcessEnvironment>
 #include <QFile>
 #include <QThread>
 
@@ -280,8 +281,8 @@ int main(int argc, char *argv[]) {
     }
     g_shared_drm_fd = receive_fd_from_socket(drmSocket.constData());
     if (g_shared_drm_fd >= 0) {
-        qputenv("QT_QPA_EGLFS_KMSFD", QByteArray::number(g_shared_drm_fd));
-    }
+        // Ensure Qt does not try to open the socket path as a device
+        qunsetenv("QT_QPA_EGLFS_DEVICE");
 
     QCoreApplication::setOrganizationName("OpenHD");
     QCoreApplication::setOrganizationDomain("openhd");

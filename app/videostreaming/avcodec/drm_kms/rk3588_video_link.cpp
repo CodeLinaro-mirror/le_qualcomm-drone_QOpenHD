@@ -1,6 +1,6 @@
 #include "rk3588_video_link.h"
 
-#if defined(__linux__)
+#if defined(__linux__) && !defined(__android__)
 
 #include <errno.h>
 #include <fcntl.h>

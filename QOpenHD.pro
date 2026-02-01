@@ -128,7 +128,8 @@ LinuxBuild {
 
     # Gstreamer / qmlglsink decode and display, all sources
     # r.n only used for secondary video and for primary video only on platforms we cannot do primary video via QSG / avcodec
-    include(app/videostreaming/gstreamer/gst_video.pri)
+    # Android video uses native media player; avoid GStreamer dependency on NDK.
+    #include(app/videostreaming/gstreamer/gst_video.pri)
 }
 
 # gst Qt plugins in windows is hard

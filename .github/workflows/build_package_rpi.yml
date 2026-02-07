@@ -5,7 +5,7 @@ on:
    branches:
       - "2.6-evo"
       - "dev-release"
-      - "release"
+      - "testing_Pi"
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
